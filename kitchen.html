@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#2B2018">
+<title>Modern Frame · หน้าครัว</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F7F3EC; --card:#FFFDF8; --ink:#2B2018; --ink-soft:#7A6B5A;
+    --line:#E6DBC9; --line-soft:#EFE7D9; --accent:#A9714B; --accent-deep:#83532F;
+    --milk:#F1EADD; --ok:#3E6E54; --ok-bg:#E4EFE7; --warn:#B4762B; --warn-bg:#F6E9D4;
+    --new:#A9714B; --danger:#A33; --danger-bg:#F3D9D2;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{background:#EAE3D6;color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .mono{font-family:"IBM Plex Mono",monospace}
+  .frame-word{font-family:"Fraunces",serif;font-weight:500;letter-spacing:.3px}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input{font-family:inherit;font-size:16px}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  /* header */
+  header{position:sticky;top:0;z-index:20;background:var(--ink);color:var(--cream);padding:12px 16px}
+  .htop{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:1100px;margin:0 auto}
+  .htitle{display:flex;flex-direction:column;line-height:1.15}
+  .htitle .nm{font-size:18px}
+  .htitle .sub{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:#C9BBA6;margin-top:2px}
+  .conn{display:flex;align-items:center;gap:7px;font-size:12px;color:#C9BBA6}
+  .dot{width:9px;height:9px;border-radius:50%;background:#7A6B5A}
+  .dot.on{background:#5FBF7E;box-shadow:0 0 0 3px rgba(95,191,126,.2)}
+  .dot.off{background:#C8694F}
+  .hbtns{display:flex;gap:8px;align-items:center}
+  .hbtn{font-size:12.5px;color:var(--cream);border:1px solid #4a3b2e;background:#3a2c20;border-radius:9px;padding:7px 11px;white-space:nowrap}
+  .hbtn.on{background:var(--cream);color:var(--ink);border-color:var(--cream)}
+
+  /* tabs */
+  .tabs{display:flex;gap:8px;max-width:1100px;margin:10px auto 0;padding:0}
+  .tab{flex:1;padding:9px 10px;border-radius:10px;font-size:14px;font-weight:500;background:#3a2c20;color:#C9BBA6;border:1px solid #4a3b2e;display:flex;align-items:center;justify-content:center;gap:7px}
+  .tab.on{background:var(--cream);color:var(--ink);border-color:var(--cream)}
+  .badge{min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--accent);color:#fff;font-size:11px;font-weight:600;display:inline-flex;align-items:center;justify-content:center}
+  .tab.on .badge{background:var(--ink);color:var(--cream)}
+
+  main{max-width:1100px;margin:0 auto;padding:14px 14px 60px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+  .empty{text-align:center;color:var(--ink-soft);padding:70px 20px;font-size:15px}
+  .empty .big{font-size:40px;margin-bottom:10px}
+
+  /* order card */
+  .order{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 1px 0 rgba(0,0,0,.02)}
+  .order.is-new{animation:pop .4s ease; border-color:var(--accent)}
+  @keyframes pop{0%{transform:scale(.97);box-shadow:0 0 0 6px rgba(169,113,75,.25)}100%{transform:scale(1);box-shadow:none}}
+  .ohead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:13px 14px 10px;border-bottom:1px solid var(--line-soft)}
+  .otable{display:flex;align-items:baseline;gap:8px}
+  .otable .tlbl{font-size:12px;color:var(--ink-soft)}
+  .otable .tno{font-family:"Fraunces",serif;font-size:30px;font-weight:500;line-height:1}
+  .ometa{text-align:right;font-size:12px;color:var(--ink-soft);line-height:1.5}
+  .ometa .ono{font-family:"IBM Plex Mono",monospace;color:var(--accent-deep);font-weight:600}
+  .ago{font-variant-numeric:tabular-nums}
+  .ago.warn{color:var(--warn);font-weight:600}
+  .ago.late{color:var(--danger);font-weight:700}
+
+  .statpill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;margin-top:6px}
+  .statpill.received{background:var(--warn-bg);color:var(--warn)}
+  .statpill.preparing{background:#E6EEF6;color:#3A6098}
+  .statpill.served{background:var(--ok-bg);color:var(--ok)}
+  .statpill.cancelled{background:var(--danger-bg);color:var(--danger)}
+
+  .items{padding:10px 14px 4px;flex:1}
+  .li{display:flex;gap:9px;padding:6px 0;border-bottom:1px dashed var(--line-soft)}
+  .li:last-child{border-bottom:none}
+  .li .q{min-width:30px;height:26px;padding:0 6px;border-radius:7px;background:var(--ink);color:var(--cream);font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .li .nm{font-size:14.5px;font-weight:500}
+  .li .opt{font-size:12.5px;color:var(--accent-deep);margin-top:1px}
+  .li .nt{font-size:12.5px;color:var(--danger);margin-top:2px;font-weight:500}
+
+  .ofoot{padding:11px 14px 13px;border-top:1px solid var(--line-soft)}
+  .osum{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--ink-soft);margin-bottom:10px}
+  .osum b{font-size:15px;color:var(--ink)}
+  .acts{display:flex;gap:8px}
+  .abtn{flex:1;border-radius:11px;padding:13px 10px;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:7px}
+  .abtn.go{background:var(--ink);color:var(--cream)}
+  .abtn.ok{background:var(--ok);color:#fff}
+  .abtn.ghost{flex:0 0 auto;background:transparent;color:var(--ink-soft);border:1px solid var(--line);padding:13px 14px}
+  .abtn.undo{background:var(--milk);color:var(--accent-deep);border:1px solid var(--line)}
+  .abtn:active{transform:scale(.98)}
+
+  /* gate / overlays */
+  .gate{position:fixed;inset:0;z-index:100;background:var(--ink);color:var(--cream);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+  .gate h1{font-family:"Fraunces",serif;font-weight:500;font-size:28px;margin:0 0 4px}
+  .gate .sub{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#C9BBA6;margin-bottom:26px}
+  .gate input{width:200px;max-width:70vw;text-align:center;letter-spacing:8px;font-size:22px;padding:13px;border-radius:12px;border:1px solid #4a3b2e;background:#3a2c20;color:var(--cream)}
+  .gate .gbtn{margin-top:14px;background:var(--cream);color:var(--ink);border-radius:12px;padding:13px 30px;font-size:16px;font-weight:600}
+  .gate .err{color:#E9A18B;font-size:13px;margin-top:12px;min-height:18px}
+  .setup{max-width:560px;background:var(--card);color:var(--ink);border-radius:16px;padding:24px;text-align:left;line-height:1.7}
+  .setup h2{margin:0 0 10px;font-size:19px}
+  .setup code{background:var(--milk);padding:1px 6px;border-radius:5px;font-family:"IBM Plex Mono",monospace;font-size:13px}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--cream);padding:11px 20px;border-radius:999px;font-size:14px;z-index:120;opacity:0;transition:.25s;pointer-events:none}
+  .toast.show{opacity:1}
+  .hidden{display:none !important}
+  @media(max-width:520px){ .htitle .nm{font-size:16px} .tab{font-size:13px} }
+</style>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+  window.__db=null; window.__configured=false;
+  (function(){
+    var cfg=window.FIREBASE_CONFIG||{};
+    var ready=cfg.apiKey && String(cfg.apiKey).indexOf("PASTE")===-1 && cfg.databaseURL && String(cfg.databaseURL).indexOf("PASTE")===-1;
+    if(ready){
+      try{ firebase.initializeApp(cfg); window.__db=firebase.database(); window.__configured=true; }
+      catch(e){ console.error("เชื่อม Firebase ไม่สำเร็จ:",e); }
+    }
+  })();
+</script>
+</head>
+<body>
+
+<!-- ===== gate: ยังไม่ตั้งค่า Firebase ===== -->
+<div class="gate" id="setupGate">
+  <div class="setup">
+    <h2>⚙️ ยังไม่ได้ตั้งค่า Firebase</h2>
+    <p>หน้าครัวต้องเชื่อม Firebase ก่อนถึงจะเห็นออเดอร์ ทำตามนี้ครั้งเดียว:</p>
+    <p>1. สร้างโปรเจกต์ที่ <code>console.firebase.google.com</code><br>
+       2. เปิด <b>Realtime Database</b><br>
+       3. คัดลอกค่า config มาวางในไฟล์ <code>firebase-config.js</code><br>
+       4. วางกฎ (Rules) ตามที่อยู่ใน <code>README.md</code></p>
+    <p style="color:var(--ink-soft);font-size:13.5px">เปิดไฟล์ <code>README.md</code> เพื่อดูขั้นตอนแบบละเอียด</p>
+  </div>
+</div>
+
+<!-- ===== gate: รหัสผ่าน ===== -->
+<div class="gate hidden" id="passGate">
+  <h1 class="frame-word">Modern Frame</h1>
+  <div class="sub">kitchen · หน้าครัว</div>
+  <input id="passInput" type="password" inputmode="numeric" placeholder="• • • •" autocomplete="off">
+  <button class="gbtn" id="passBtn">เข้าสู่หน้าครัว</button>
+  <div class="err" id="passErr"></div>
+</div>
+
+<!-- ===== app ===== -->
+<div class="hidden" id="app">
+  <header>
+    <div class="htop">
+      <div class="htitle"><span class="nm frame-word" id="shopName">Modern Frame</span><span class="sub">kitchen · หน้าครัว</span></div>
+      <div class="hbtns">
+        <div class="conn"><span class="dot" id="connDot"></span><span id="connTxt">กำลังเชื่อม…</span></div>
+        <button class="hbtn" id="soundBtn">🔔 เสียง: เปิด</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab on" data-tab="active">กำลังทำ <span class="badge" id="bActive">0</span></button>
+      <button class="tab" data-tab="served">เสร็จแล้ววันนี้ <span class="badge" id="bServed">0</span></button>
+    </div>
+  </header>
+  <main>
+    <div class="grid" id="grid"></div>
+    <div class="empty hidden" id="empty"></div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ---------- refs ----------
+const $=id=>document.getElementById(id);
+const SHOP=window.SHOP_NAME||"Modern Frame";
+$("shopName").textContent=SHOP;
+document.title=SHOP+" · หน้าครัว";
+
+// ---------- not configured ----------
+if(!window.__configured){
+  $("setupGate").classList.remove("hidden");
+}else{
+  $("setupGate").classList.add("hidden");
+  startGate();
+}
+
+// ---------- passcode gate ----------
+function startGate(){
+  const PASS=String(window.KITCHEN_PASSCODE||"1234");
+  if(sessionStorage.getItem("mf_kitchen_ok")==="1"){ enterApp(); return; }
+  $("passGate").classList.remove("hidden");
+  const inp=$("passInput"), err=$("passErr");
+  setTimeout(()=>inp.focus(),200);
+  function tryPass(){
+    if(inp.value===PASS){ sessionStorage.setItem("mf_kitchen_ok","1"); $("passGate").classList.add("hidden"); enterApp(); }
+    else { err.textContent="รหัสผ่านไม่ถูกต้อง"; inp.value=""; inp.focus(); }
+  }
+  $("passBtn").onclick=tryPass;
+  inp.onkeydown=e=>{ if(e.key==="Enter") tryPass(); };
+}
+
+// ---------- sound ----------
+let soundOn=true, audioCtx=null;
+function initAudio(){ try{ audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==="suspended")audioCtx.resume(); }catch(e){} }
+function beep(){
+  if(!soundOn) return;
+  initAudio();
+  if(!audioCtx) return;
+  if(audioCtx.state==="suspended"){ try{audioCtx.resume();}catch(e){} }
+  try{
+    const seq=[[880,0],[1175,.14]];
+    seq.forEach(([f,t])=>{
+      const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+      o.type="sine"; o.frequency.value=f;
+      const start=audioCtx.currentTime+t;
+      g.gain.setValueAtTime(.0001,start);
+      g.gain.exponentialRampToValueAtTime(.35,start+.02);
+      g.gain.exponentialRampToValueAtTime(.0001,start+.22);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(start); o.stop(start+.24);
+    });
+  }catch(e){}
+}
+
+// ---------- app ----------
+let activeTab="active";
+let orders={};            // key -> order
+let seen=new Set();       // keys ที่เห็นแล้ว (กันเด้งเสียงซ้ำ)
+let primed=false;         // โหลดรอบแรกเสร็จหรือยัง
+let newKeys=new Set();    // keys ที่เพิ่งเข้ามา (ใส่ animation)
+
+function enterApp(){
+  $("app").classList.remove("hidden");
+  initAudio();
+  // ปลดล็อกเสียงเมื่อมีการแตะ/คลิก/กดปุ่ม (iOS/Safari ต้องมี user gesture ก่อนเล่นเสียง)
+  ["click","keydown","touchstart"].forEach(ev=>document.addEventListener(ev,initAudio));
+  // ปุ่มเสียง
+  $("soundBtn").onclick=()=>{
+    soundOn=!soundOn; initAudio();
+    $("soundBtn").textContent= soundOn? "🔔 เสียง: เปิด" : "🔕 เสียง: ปิด";
+    if(soundOn) beep();
+  };
+  // ขอสิทธิ์แจ้งเตือน (ถ้ารองรับ)
+  try{ if("Notification" in window && Notification.permission==="default") Notification.requestPermission(); }catch(e){}
+  // tabs
+  document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+    activeTab=t.dataset.tab;
+    document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===t));
+    render();
+  });
+  // connection
+  window.__db.ref(".info/connected").on("value",s=>{
+    const on=s.val()===true;
+    $("connDot").className="dot "+(on?"on":"off");
+    $("connTxt").textContent=on?"เชื่อมต่อแล้ว":"ออฟไลน์…";
+  });
+  // orders (จำกัด 200 รายการล่าสุด กันโหลดทั้งหมด)
+  window.__db.ref("orders").orderByChild("createdAt").limitToLast(200).on("value",snap=>{
+    const val=snap.val()||{};
+    // ตรวจออเดอร์ใหม่
+    Object.keys(val).forEach(k=>{
+      if(!seen.has(k)){
+        seen.add(k);
+        if(primed && (val[k].status==="received")){ onNewOrder(val[k]); newKeys.add(k); }
+      }
+    });
+    orders=val;
+    primed=true;
+    seen.forEach(k=>{ if(!(k in val)) seen.delete(k); }); // กัน seen โตไม่จำกัดเมื่อเปิดทิ้งทั้งวัน
+    render();
+  },err=>{
+    showToast("อ่านข้อมูลไม่ได้: "+(err&&err.code||"ตรวจสอบ Rules"));
+  });
+  // อัปเดตเวลา "กี่นาทีที่แล้ว" ทุก 15 วิ
+  setInterval(updateAgos,15000);
+}
+
+function onNewOrder(o){
+  beep();
+  showToast("🔔 ออเดอร์ใหม่ · โต๊ะ "+(o.table||"—"));
+  try{
+    if("Notification" in window && Notification.permission==="granted"){
+      const body=(o.items||[]).map(i=>i.qty+"× "+i.nm).join(", ");
+      new Notification("ออเดอร์ใหม่ · โต๊ะ "+(o.table||"—"), {body, tag:o.orderNo});
+    }
+  }catch(e){}
+}
+
+function startOfToday(){ const d=new Date(); d.setHours(0,0,0,0); return d.getTime(); }
+
+function listFor(tab){
+  const arr=Object.keys(orders).map(k=>({key:k,...orders[k]}));
+  if(tab==="active"){
+    return arr.filter(o=>o.status==="received"||o.status==="preparing")
+              .sort((a,b)=>(a.createdAt||0)-(b.createdAt||0)); // เก่าสุดก่อน (ทำตามคิว)
+  }
+  const today=startOfToday();
+  return arr.filter(o=>(o.status==="served"||o.status==="cancelled") && ((o.servedAt||o.createdAt||0)>=today))
+            .sort((a,b)=>(b.servedAt||b.createdAt||0)-(a.servedAt||a.createdAt||0)); // ใหม่สุดก่อน
+}
+
+function render(){
+  const active=listFor("active"), served=listFor("served");
+  $("bActive").textContent=active.length;
+  $("bServed").textContent=served.length;
+  const list = activeTab==="active"? active : served;
+  const grid=$("grid"), empty=$("empty");
+  if(!list.length){
+    grid.innerHTML="";
+    empty.classList.remove("hidden");
+    empty.innerHTML = activeTab==="active"
+      ? '<div class="big">🍳</div>ยังไม่มีออเดอร์ที่ต้องทำ<br><span style="font-size:13px">ออเดอร์ใหม่จะเด้งขึ้นมาที่นี่พร้อมเสียงเตือน</span>'
+      : '<div class="big">✅</div>ยังไม่มีออเดอร์ที่เสร็จวันนี้';
+    return;
+  }
+  empty.classList.add("hidden");
+  grid.innerHTML=list.map(card).join("");
+  // bind ปุ่ม
+  grid.querySelectorAll("[data-act]").forEach(b=>{
+    b.onclick=()=>action(b.dataset.key,b.dataset.act);
+  });
+  // เคลียร์ flag เฉพาะออเดอร์ที่ถูกวาดรอบนี้ (ออเดอร์ใหม่ที่อยู่คนละแท็บยังเก็บ animation ไว้)
+  const rendered=new Set(list.map(o=>o.key));
+  newKeys=new Set([...newKeys].filter(k=>!rendered.has(k)));
+}
+
+function agoText(ts){
+  if(!ts) return "";
+  const mins=Math.floor((Date.now()-ts)/60000);
+  if(mins<1) return "เมื่อกี้";
+  if(mins<60) return mins+" นาที";
+  const h=Math.floor(mins/60); return h+" ชม. "+(mins%60)+" น.";
+}
+function agoClass(ts,status){
+  if(status==="served"||!ts) return "";
+  const mins=(Date.now()-ts)/60000;
+  if(mins>=20) return "late";
+  if(mins>=12) return "warn";
+  return "";
+}
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+const STAT={received:["received","🆕 ใหม่ · รอเริ่ม"],preparing:["preparing","👨‍🍳 กำลังทำ"],served:["served","✓ เสิร์ฟแล้ว"],cancelled:["cancelled","✕ ยกเลิก"]};
+
+function card(o){
+  const items=(o.items||[]).map(it=>{
+    const opt=[it.temp,it.sweet].filter(Boolean).join(" · ");
+    return `<div class="li"><span class="q">${esc(it.qty)}×</span><span style="flex:1;min-width:0">
+      <span class="nm">${esc(it.nm)}</span>
+      ${opt?`<div class="opt">${esc(opt)}</div>`:""}
+      ${it.note?`<div class="nt">📝 ${esc(it.note)}</div>`:""}
+    </span></div>`;
+  }).join("");
+  const status=STAT[o.status]?o.status:"received";   // จำกัดให้เป็นค่าที่รู้จัก (กัน XSS/ค่าแปลก)
+  const st=STAT[status];
+  const isNew=newKeys.has(o.key);
+  let acts="";
+  if(status==="received"){
+    acts=`<button class="abtn go" data-act="preparing" data-key="${o.key}">▶ เริ่มทำ</button>
+          <button class="abtn ghost" data-act="cancel" data-key="${o.key}">ยกเลิก</button>`;
+  }else if(status==="preparing"){
+    acts=`<button class="abtn ok" data-act="served" data-key="${o.key}">✓ เสิร์ฟแล้ว</button>
+          <button class="abtn ghost" data-act="received" data-key="${o.key}">↩</button>`;
+  }else if(status==="served"){
+    acts=`<button class="abtn undo" data-act="preparing" data-key="${o.key}">↩ คืนเข้าคิว</button>`;
+  }else if(status==="cancelled"){
+    acts=`<button class="abtn undo" data-act="received" data-key="${o.key}">↩ คืนเข้าคิว</button>`;
+  }
+  return `<div class="order${isNew?' is-new':''}">
+    <div class="ohead">
+      <div>
+        <div class="otable"><span class="tlbl">โต๊ะ</span><span class="tno">${esc(o.table||"—")}</span></div>
+        <span class="statpill ${st[0]}">${st[1]}</span>
+      </div>
+      <div class="ometa">
+        <div class="ono">#${esc(o.orderNo||"")}</div>
+        <div class="ago ${agoClass(o.createdAt,status)}" data-ts="${Number(o.createdAt)||0}" data-status="${status}">${agoText(o.createdAt)}</div>
+      </div>
+    </div>
+    <div class="items">${items||'<div style="padding:8px 0;color:var(--ink-soft)">—</div>'}</div>
+    <div class="ofoot">
+      <div class="osum"><span>${(o.count||(o.items||[]).reduce((s,i)=>s+(i.qty||0),0))} รายการ</span><b class="mono">฿${esc(o.total||0)}</b></div>
+      <div class="acts">${acts}</div>
+    </div>
+  </div>`;
+}
+
+function updateAgos(){
+  document.querySelectorAll(".ago").forEach(el=>{
+    const ts=+el.dataset.ts, status=el.dataset.status;
+    el.textContent=agoText(ts);
+    el.className="ago "+agoClass(ts,status);
+  });
+}
+
+function action(key,act){
+  const o=orders[key]; if(!o) return;
+  if(act==="cancel"){
+    if(!confirm("ยกเลิกออเดอร์โต๊ะ "+(o.table||"—")+" ?")) return;
+    window.__db.ref("orders/"+key).update({status:"cancelled"}).catch(e=>showToast("ทำรายการไม่สำเร็จ"));
+    showToast("ยกเลิกออเดอร์แล้ว");
+    return;
+  }
+  // received / preparing / served
+  const upd={status:act};
+  if(act==="served") upd.servedAt=firebase.database.ServerValue.TIMESTAMP;
+  window.__db.ref("orders/"+key).update(upd).catch(e=>showToast("ทำรายการไม่สำเร็จ"));
+  const msg={preparing:"เริ่มทำ · โต๊ะ "+(o.table||"—"),served:"เสิร์ฟแล้ว · โต๊ะ "+(o.table||"—"),received:"คืนเข้าคิวแล้ว"}[act];
+  if(msg) showToast(msg);
+}
+
+// ---------- toast ----------
+let toastT;
+function showToast(msg){
+  const t=$("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),2200);
+}
+</script>
+</body>
+</html>

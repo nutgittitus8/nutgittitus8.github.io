@@ -1,0 +1,124 @@
+# Modern Frame — เว็บสั่งอาหารผ่าน QR + หน้าครัวเรียลไทม์
+
+ร้านอาหาร · กาแฟ · นมสด — ลูกค้าสแกน QR ที่โต๊ะแล้วสั่งบนมือถือ
+ออเดอร์เด้งเข้า **หน้าครัว** ทันทีพร้อมเสียงเตือน และสถานะวิ่งกลับขึ้นมือถือลูกค้าแบบเรียลไทม์
+
+> ทำงานบน **GitHub Pages** (ฟรี) + **Firebase Realtime Database** (ฟรี) — ไม่ต้องมีเซิร์ฟเวอร์เอง
+
+---
+
+## 2 ลิงก์ คนละหน้า (ใช้ Firebase ตัวกลางเดียวกัน)
+
+| ใคร | ลิงก์ | ทำอะไร |
+|-----|-------|--------|
+| 🧑 **ลูกค้า** | `https://nutgittitus8.github.io/?table=7` | ดูเมนู / สั่งอาหาร / ดูสถานะ (ฝังอยู่ใน QR แต่ละโต๊ะ) |
+| 👨‍🍳 **พ่อครัว** | `https://nutgittitus8.github.io/kitchen.html` | เห็นออเดอร์สดๆ กดเริ่มทำ/เสิร์ฟ (มีรหัสผ่าน) |
+| 🖨️ **เจ้าของร้าน** | `https://nutgittitus8.github.io/qr.html` | สร้าง/พิมพ์ QR ทุกโต๊ะ |
+
+---
+
+## ไฟล์ในชุดนี้
+- **index.html** — หน้าสั่งอาหารของลูกค้า (รูปถ่ายจริง + เชื่อม Firebase) ← QR ชี้มาที่นี่
+- **kitchen.html** — หน้าครัวเรียลไทม์ ออเดอร์เด้ง + เสียงเตือน + กดเปลี่ยนสถานะ
+- **firebase-config.js** — ที่เดียวที่ต้องวางคีย์ Firebase ของร้าน (ใช้ร่วมทั้ง 2 หน้า)
+- **qr.html** — ตัวสร้าง QR แยกตามโต๊ะ (ดาวน์โหลด/พิมพ์)
+- **menu-emoji.html** — เวอร์ชันเมนูแบบ emoji (สำรอง เบากว่า ไม่ได้เชื่อม Firebase)
+- **qr-table-7-example.png** — QR ตัวอย่างโต๊ะ 7
+
+---
+
+## ⚙️ ตั้งค่า Firebase (ทำครั้งเดียว ~5 นาที)
+
+1. เข้า <https://console.firebase.google.com> → **Add project** → ตั้งชื่อ (เช่น `modern-frame`) → สร้าง
+2. เมนูซ้าย **Build → Realtime Database → Create Database**
+   - เลือกโซนใกล้ไทย (เช่น *Singapore* / `asia-southeast1`)
+   - เริ่มแบบ **Start in test mode** ไปก่อนได้ (เดี๋ยวเปลี่ยน Rules ในข้อ 4)
+3. ⚙️ **Project settings → General →** เลื่อนลงหา *Your apps* → กดไอคอน **`</>`** (Web)
+   - ตั้งชื่อแอป → ระบบจะโชว์ก้อน `firebaseConfig { ... }`
+   - คัดลอกค่ามาวางทับใน **`firebase-config.js`** ให้ครบทุกบรรทัด (apiKey, databaseURL ฯลฯ)
+4. กลับไปที่ **Realtime Database → แท็บ Rules** วางกฎนี้แล้วกด **Publish**:
+
+```json
+{
+  "rules": {
+    "orders": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": "createdAt",
+      "$id": {
+        ".validate": "newData.hasChildren(['table','total','status','createdAt'])",
+        "status":    { ".validate": "newData.isString() && newData.val().matches(/^(received|preparing|served|cancelled)$/)" },
+        "total":     { ".validate": "newData.isNumber()" },
+        "table":     { ".validate": "newData.isString()" },
+        "createdAt": { ".validate": "newData.isNumber()" },
+        "servedAt":  { ".validate": "newData.isNumber()" }
+      }
+    }
+  }
+}
+```
+
+> กฎนี้เหมาะกับร้านเล็ก: ใครก็สร้าง/อ่านออเดอร์ได้ (ต้องรู้ลิงก์ก่อน) แต่บังคับรูปแบบข้อมูล + จำกัดค่า `status` ให้เป็นเฉพาะที่อนุญาต และเพิ่ม index ให้หน้าครัวเรียงตามเวลาได้เร็ว
+> ⚠️ **`".read": true` หมายความว่าใครที่รู้ลิงก์เว็บ เปิดคอนโซลก็ดึงรายการออเดอร์ทั้งหมดได้** (เลขโต๊ะ/เมนู/หมายเหตุ/ยอด) — โอเคสำหรับร้านเล็ก แต่ถ้ารับไม่ได้ ให้ล็อกด้วย Auth ตามหัวข้อ **ความปลอดภัย** ด้านล่าง
+
+5. เปลี่ยน **รหัสผ่านหน้าครัว** ในไฟล์ `firebase-config.js`:
+   ```js
+   window.KITCHEN_PASSCODE = "1234";   // ← เปลี่ยนเป็นเลขของร้าน
+   ```
+
+> ก่อนตั้งค่า Firebase เว็บจะรันเป็น **"โหมดเดโม"** — สั่งได้ ดูหน้าตาได้ แต่ออเดอร์ยังไม่ถูกส่งไปครัวจริง
+
+---
+
+## 🚀 ขึ้น GitHub Pages
+
+เว็บนี้ถูก deploy แล้วที่ repo **`nutgittitus8.github.io`** (เป็น user-pages repo จึงอยู่ที่ root URL)
+
+ถ้าจะตั้งใหม่เองตั้งแต่ต้น รันใน `D:\Modern fream`:
+
+```bash
+git init -b main
+git add .
+git commit -m "Modern Frame: ordering + realtime kitchen"
+gh repo create nutgittitus8.github.io --public --source=. --push
+# เปิด GitHub Pages (วิธีที่ชัวร์สุด: เปิดผ่านหน้าเว็บ Settings > Pages เลือก Branch=main / โฟลเดอร์ = / (root))
+gh api -X POST "repos/nutgittitus8/nutgittitus8.github.io/pages" -f "source[branch]=main" -f "source[path]=/"
+# ตรวจว่าเปิดติดไหม (จะคืน URL ของเว็บ):
+gh api "repos/nutgittitus8/nutgittitus8.github.io/pages" --jq .html_url
+```
+
+จากนั้นรอ ~1 นาที เว็บจะอยู่ที่:
+`https://nutgittitus8.github.io/`
+
+อัปเดตทีหลัง: แก้ไฟล์ → `git add . && git commit -m "..." && git push` (เว็บอัปเดตอัตโนมัติใน ~1 นาที)
+
+> เปลี่ยน `firebase-config.js` แล้วอย่าลืม `git push` ใหม่ เพื่อให้เว็บที่เผยแพร่ใช้ค่าที่อัปเดต
+
+---
+
+## 🍳 หน้าครัวใช้ยังไง
+
+1. เปิด `…/kitchen.html` บนแท็บเล็ต/มือถือในครัว → ใส่รหัสผ่าน
+2. ออเดอร์ใหม่เด้งขึ้น **แท็บ "กำลังทำ"** พร้อม **เสียงเตือน** (เรียงเก่าสุดอยู่บน = ทำตามคิว)
+   - เวลาเกิน 12 นาที = เหลือง, เกิน 20 นาที = แดง
+3. กด **▶ เริ่มทำ** → ลูกค้าเห็น "กำลังเตรียม"
+4. กด **✓ เสิร์ฟแล้ว** → ย้ายไปแท็บ "เสิร์ฟแล้ววันนี้" และลูกค้าเห็น "เสิร์ฟแล้ว"
+5. ปุ่ม 🔔 เปิด/ปิดเสียง · ปุ่ม ↩ ย้อนสถานะได้
+
+> เปิดทิ้งไว้ค้างหน้าจอได้ตลอดวัน · ถ้ามีหลายเครื่องในครัว เปิดพร้อมกันได้ เห็นตรงกันทุกเครื่อง
+
+---
+
+## 🔒 ความปลอดภัย (อ่านก่อนใช้จริงจัง)
+
+- คีย์ Firebase ที่อยู่ใน `firebase-config.js` **เปิดเผยได้ตามปกติ** ของเว็บฝั่งหน้าบ้าน — สิ่งที่กันจริงคือ **Rules**
+- รหัสผ่านหน้าครัวเป็นการกันเบื้องต้น (เช็คฝั่งเบราว์เซอร์) เหมาะกับร้านเล็ก ไม่ใช่ความปลอดภัยระดับสูง
+- อยากล็อกแน่นขึ้น: เปิด **Firebase Authentication (Anonymous)** แล้วเปลี่ยน Rules ให้ `".write"` เฉพาะผู้ที่ล็อกอิน / จำกัดสิทธิ์แก้สถานะเฉพาะครัว — แจ้งได้ถ้าต้องการให้ช่วยตั้ง
+
+---
+
+## 🛠️ ปรับแต่งต่อได้
+- **เมนู/ราคา/รูป**: แก้ array `MENU` ใน `index.html`
+- **ตัวเลือกเครื่องดื่ม**: แก้ `TEMPS` / `SWEETS` ใน `index.html`
+- **ชื่อร้าน/รหัสครัว**: แก้ `firebase-config.js`
+- อยากได้ระบบชำระเงิน, สรุปยอดขายรายวัน, หรือพิมพ์สลิปเข้าครัว — แจ้งได้เลย

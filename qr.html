@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Modern Frame · สร้าง QR สั่งอาหาร</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root{--cream:#F7F3EC;--ink:#2B2018;--soft:#7A6B5A;--line:#E6DBC9;--milk:#F1EADD;--accent:#A9714B}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--cream);color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;padding:24px}
+  .wrap{max-width:880px;margin:0 auto}
+  h1{font-family:"Fraunces",serif;font-weight:500;font-size:30px;margin:0}
+  .sub{color:var(--soft);font-size:13px;letter-spacing:2px;text-transform:uppercase;margin:4px 0 24px}
+  .panel{background:#FFFDF8;border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:24px}
+  label{display:block;font-size:13px;color:var(--soft);margin:14px 0 6px}
+  label:first-child{margin-top:0}
+  input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;font-size:16px;font-family:inherit;background:var(--cream);color:var(--ink)}
+  .row{display:flex;gap:14px;flex-wrap:wrap}
+  .row>div{flex:1;min-width:200px}
+  button{font-family:inherit;cursor:pointer;border:none}
+  .btn{background:var(--ink);color:var(--cream);border-radius:11px;padding:13px 20px;font-size:15px;font-weight:500;margin-top:18px}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+  .qrcard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;text-align:center}
+  .qrcard .tbl{font-family:"Fraunces",serif;font-size:15px;margin-bottom:4px}
+  .qrcard .name{font-size:11px;color:var(--soft);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px}
+  .qrcard .qrbox{display:flex;justify-content:center;margin-bottom:14px}
+  .qrcard .qrbox img,.qrcard .qrbox canvas{border-radius:8px}
+  .dl{font-size:13px;color:var(--accent);background:var(--milk);border-radius:8px;padding:8px 0;width:100%}
+  .hint{font-size:12.5px;color:var(--soft);margin-top:8px;line-height:1.6}
+  @media print{body{padding:0}.panel,h1,.sub,.toolbar{display:none}.qrcard{break-inside:avoid;border:1px dashed #ccc}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Modern Frame</h1>
+  <div class="sub">qr generator · สำหรับโต๊ะ</div>
+
+  <div class="panel">
+    <label for="url">ลิงก์เว็บสั่งอาหารของร้าน (URL ที่อัปโหลด index.html ไว้)</label>
+    <input id="url" value="https://nutgittitus8.github.io/" placeholder="https://...">
+    <div class="row">
+      <div>
+        <label for="from">โต๊ะเริ่มต้น</label>
+        <input id="from" type="number" value="1" min="1">
+      </div>
+      <div>
+        <label for="to">ถึงโต๊ะ</label>
+        <input id="to" type="number" value="12" min="1">
+      </div>
+    </div>
+    <button class="btn" id="gen">สร้าง QR ทั้งหมด</button>
+    <button class="btn ghost" id="print">สั่งพิมพ์</button>
+    <div class="hint">ลูกค้าสแกน QR ของโต๊ะไหน ระบบจะรู้เลขโต๊ะนั้นอัตโนมัติ (เช่น <span style="font-family:monospace">?table=5</span>) — เอาไปติดที่โต๊ะหรือใส่กรอบตั้งโต๊ะได้เลย<br>
+      👨‍🍳 หน้าครัว (เปิดบนแท็บเล็ต/มือถือในครัว): <a id="kitchenLink" href="#" style="color:var(--accent);font-family:monospace">—</a></div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const grid=document.getElementById("grid");
+function buildUrl(base,n){
+  base=base.trim().replace(/\/$/,"");
+  return base + (base.includes("?")?"&":"?") + "table=" + n;
+}
+function makeQR(n){
+  const base=document.getElementById("url").value;
+  const card=document.createElement("div");
+  card.className="qrcard";
+  card.innerHTML=`<div class="tbl">โต๊ะ ${n}</div><div class="name">Modern Frame</div><div class="qrbox" id="qr${n}"></div>`;
+  grid.appendChild(card);
+  const box=card.querySelector("#qr"+n);
+  const qr=new QRCode(box,{text:buildUrl(base,n),width:180,height:180,colorDark:"#2B2018",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});
+  const dl=document.createElement("button");
+  dl.className="dl"; dl.textContent="↓ ดาวน์โหลด PNG";
+  dl.onclick=()=>{
+    const cv=box.querySelector("canvas")||box.querySelector("img");
+    let dataUrl = cv.tagName==="CANVAS" ? cv.toDataURL("image/png") : cv.src;
+    const a=document.createElement("a"); a.href=dataUrl; a.download="modernframe-table-"+n+".png"; a.click();
+  };
+  card.appendChild(dl);
+}
+function generate(){
+  grid.innerHTML="";
+  const from=Math.max(1,parseInt(document.getElementById("from").value)||1);
+  const to=Math.max(from,parseInt(document.getElementById("to").value)||from);
+  for(let n=from;n<=to;n++) makeQR(n);
+}
+function updateKitchenLink(){
+  let base=document.getElementById("url").value.trim().replace(/\/$/,"");
+  // ตัด query string ออกถ้ามี แล้วต่อ /kitchen.html
+  base=base.split("?")[0].replace(/\/index\.html$/i,"");
+  const k=base+"/kitchen.html";
+  const a=document.getElementById("kitchenLink");
+  a.textContent=k; a.href=k;
+}
+document.getElementById("gen").onclick=generate;
+document.getElementById("print").onclick=()=>window.print();
+document.getElementById("url").addEventListener("input",updateKitchenLink);
+updateKitchenLink();
+generate();
+</script>
+</body>
+</html>
