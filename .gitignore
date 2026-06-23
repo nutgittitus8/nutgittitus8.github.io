@@ -2,3 +2,6 @@
 .DS_Store
 Thumbs.db
 *.log
+
+# local helper, do not publish
+1-login-firebase.bat
