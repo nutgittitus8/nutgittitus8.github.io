@@ -14,13 +14,14 @@
    ------------------------------------------------------------ */
 
 window.FIREBASE_CONFIG = {
-  apiKey:            "PASTE_API_KEY_HERE",
-  authDomain:        "PASTE_PROJECT.firebaseapp.com",
-  databaseURL:       "https://PASTE_PROJECT-default-rtdb.firebaseio.com",
-  projectId:         "PASTE_PROJECT",
-  storageBucket:     "PASTE_PROJECT.appspot.com",
-  messagingSenderId: "PASTE_SENDER_ID",
-  appId:             "PASTE_APP_ID"
+  apiKey:            "AIzaSyCweNdgw3L9WrQTaf2HnyF1bfj8hujP6Zg",
+  authDomain:        "modern-fream.firebaseapp.com",
+  databaseURL:       "https://modern-fream-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:         "modern-fream",
+  storageBucket:     "modern-fream.firebasestorage.app",
+  messagingSenderId: "32633652730",
+  appId:             "1:32633652730:web:85f1fc2b61921b238c1043",
+  measurementId:     "G-YFKP9L3R7X"
 };
 
 /* รหัสผ่านเข้าหน้าครัว — กันลูกค้าเปิดหน้าครัวเล่น (เปลี่ยนเป็นเลขของร้าน) */
